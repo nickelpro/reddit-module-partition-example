@@ -1,0 +1,79 @@
+name: Build and Test
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+jobs:
+  build_windows:
+    name: Build and Test on Windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Developer Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build
+        run: |
+          cmake --version
+          cmake `
+            -B build `
+            -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build
+
+  build_macos:
+    name: Build and Test on MacOS
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        env:
+          MACOSX_DEPLOYMENT_TARGET: 15.0
+          ARCHFLAGS: "-arch arm64"
+        run: |
+          cmake \
+            -B build \
+            -G Ninja \
+            -DCMAKE_CXX_COMPILER=$(brew --prefix llvm@18)/bin/clang++ \
+            -DCMAKE_CXX_COMPILER_ID_ARG1=-resource-dir=$(brew --prefix llvm@18)/lib/c++ \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build
+
+  build_linux:
+    name: Build and Test on Linux
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Toolchain
+        run: |
+          pacman --noconfirm -Syu
+          pacman --noconfirm -S cmake ninja
+
+      - name: Build
+        run: |
+          cmake \
+            -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build
