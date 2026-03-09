@@ -19,7 +19,6 @@ jobs:
 
       - name: Build
         run: |
-          cmake --version
           cmake `
             -B build `
             -G Ninja `
@@ -46,7 +45,6 @@ jobs:
             -B build \
             -G Ninja \
             -DCMAKE_CXX_COMPILER=$(brew --prefix llvm@18)/bin/clang++ \
-            -DCMAKE_CXX_COMPILER_ID_ARG1=-resource-dir=$(brew --prefix llvm@18)/lib/c++ \
             -DCMAKE_BUILD_TYPE=Release
           cmake --build build
 
@@ -56,22 +54,17 @@ jobs:
   build_linux:
     name: Build and Test on Linux
     runs-on: ubuntu-latest
-    container: archlinux:base-devel
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install Toolchain
-        run: |
-          pacman --noconfirm -Syu
-          pacman --noconfirm -S cmake ninja
 
       - name: Build
         run: |
           cmake \
             -B build \
             -G Ninja \
+            -DCMAKE_CXX_COMPILER=g++-14 \
             -DCMAKE_BUILD_TYPE=Release
           cmake --build build
 
