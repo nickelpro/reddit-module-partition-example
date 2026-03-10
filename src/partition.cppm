@@ -6,7 +6,7 @@ int add(int a, int b) {
 }
 
 struct Adder {
-  Adder(int a, int b) : result {add(a, b)} {};
+  Adder(int a, int b);
   int getResult();
 
 private:
